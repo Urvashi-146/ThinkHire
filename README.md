@@ -1,103 +1,97 @@
-# ThinkHire – AI Job Matching & Notification System
+# ThinkHire – AI Job Matching System 🤖
 
-ThinkHire is an AI-powered job automation system that reads user resumes, extracts skills using LLMs, fetches real-time job opportunities from trusted job platforms, and matches them intelligently. The system also sends notifications through Email and Telegram so that users never miss a relevant opening.
-
----
-
-## 🚀 Features
-
-- 📄 **AI Resume Parsing** using OpenAI LLM
-- 🎯 **Accurate Skill Extraction**
-- 🌐 **Real-Time Job Fetching**
-  - RemoteOK API  
-  - ArbeitNow API  
-- 🔍 **Skill-Based Job Matching**
-- ✉️ **Email & Telegram Notifications**
-- 📊 Google Sheet / Database storage support
-- ⏰ **Automated Scheduler** (runs every 6 hours)
-- ⚙️ Flask Backend + React Frontend Architecture
+ThinkHire is an AI-powered job matching platform that reads resumes, extracts skills using AI, fetches real-time job opportunities from trusted job boards, and notifies users instantly via Email & Telegram.
 
 ---
 
-## 🧠 Tech Stack
+## 🔍 Overview
 
-### **Frontend**
-- React.js  
-- Tailwind CSS  
-
-### **Backend**
-- Python  
-- Flask  
-- SQLite (or Google Sheets)  
-
-### **AI**
-- OpenAI GPT Models  
-
-### **Integrations**
-- Gmail SMTP  
-- Telegram Bot API  
-- Job APIs (RemoteOK, ArbeitNow)
+- Built using **Python, Flask, and React**
+- Uses **OpenAI GPT** for intelligent resume skill extraction
+- Fetches real-time jobs from public APIs (RemoteOK, ArbeitNow)
+- Matches jobs based on extracted skills
+- Sends job alerts through **Email & Telegram**
+- Designed for automation and multi-user scalability
 
 ---
 
+## 📁 Project Files
 
+| File / Folder | Description |
+|---------------|-------------|
+| `backend/app.py` | Main Flask backend server |
+| `backend/resume.py` | Resume parsing + AI skill extraction |
+| `backend/jobs.py` | Real-time job fetching & matching |
+| `backend/notifications.py` | Email + Telegram notification logic |
+| `backend/models.py` | Database for job storage |
+| `backend/utils.py` | Helper functions |
+| `backend/requirements.txt` | Python dependencies |
+| `frontend/index.html` | React app entry point |
+| `frontend/src/App.jsx` | Resume upload UI |
+| `frontend/src/main.jsx` | React root file |
+| `.gitignore` | Git ignore rules |
+
+---
+
+## 🗂 Folder Structure
+
+```
 ThinkHire/
-│── backend/
-│ ├── app.py
-│ ├── resume.py
-│ ├── jobs.py
-│ ├── notifications.py
-│ ├── models.py
-│ ├── utils.py
-│ └── requirements.txt
+├── backend/
+│   ├── app.py
+│   ├── resume.py
+│   ├── jobs.py
+│   ├── notifications.py
+│   ├── models.py
+│   ├── utils.py
+│   └── requirements.txt
 │
 ├── frontend/
-│ ├── index.html
-│ └── src/
-│ ├── App.jsx
-│ └── main.jsx
+│   ├── index.html
+│   └── src/
+│       ├── App.jsx
+│       └── main.jsx
 │
 └── .gitignore
-
+```
 
 ---
 
-## 🛠️ How to Run Locally
+## 🚀 Run This Project Locally
 
-### 🔧 Backend Setup
+```bash
+git clone https://github.com/Urvashi-146/ThinkHire.git
+cd ThinkHire
+```
 
-
+### 🛠 Backend Setup
+```bash
 cd backend
 pip install -r requirements.txt
 python app.py
-
+```
 
 ### 🎨 Frontend Setup
-
-
+```bash
 cd frontend
 npm install
 npm run dev
-
-
----
-
-## ✨ Future Enhancements
-
-- Full SaaS web portal with user login
-- Multi-user job dashboards
-- Integration with LinkedIn, Indeed, etc.
-- Advanced AI ranking for job matches
-- Secure OAuth authentication
-- In-app notification system
+```
 
 ---
 
-## 👤 Author
+## 🔮 Future Enhancements
+
+- SaaS version with user login  
+- Multi-user dashboards  
+- More job platforms (LinkedIn, Indeed)  
+- AI-based job ranking  
+- OAuth secure authentication  
+- In-app real-time notifications  
+
+---
+
+## 👩‍💻 Author
 
 **Urvashi Sharma**  
-ThinkHire – AI Job Automation Project
-
-
-## 📁 Project Structure
-
+ThinkHire – AI Job Matching Project  
