@@ -4,104 +4,133 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from resume import parse_resume, extract_text_from_pdf  # ⭐ PDF parser added
-from jobs import fetch_and_match_jobs
+from resume import parse_resume, extract_text_from_pdf
+from jobs import fetch_and_match_jobs       # FIXED: only this import
 from models import init_db, save_match
 from notifications import send_email, send_telegram
+from profession import detect_profession
 
 app = Flask(__name__)
 CORS(app)
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET', 'dev')
+app.config["SECRET_KEY"] = os.environ.get("FLASK_SECRET", "dev")
 
-# ⭐ Initialize DB
+# Initialize DB
 init_db()
 
 
-@app.route('/')
+@app.route("/")
 def health():
     return jsonify({"status": "ThinkHire backend running"})
 
 
-@app.route('/api/upload-resume', methods=['POST'])
+# ===============================================================
+# ⭐ MAIN ENDPOINT — UPLOAD RESUME & GET SKILLS + MATCHED JOBS
+# ===============================================================
+@app.route("/api/upload-resume", methods=["POST"])
 def upload_resume():
-    """
-    Accepts multipart form:
-       - PDF file
-       - TXT file
-       - OR JSON with "text"
-    Returns extracted skills + job matches.
-    """
     try:
         text = ""
 
-        # ⭐ CASE 1 — File uploaded (PDF or TXT)
+        # ---------------------------
+        # 1️⃣ FILE UPLOAD CASE
+        # ---------------------------
         if "file" in request.files:
-            f = request.files["file"]
+            file = request.files["file"]
 
-            # PDF
-            if f.filename.lower().endswith(".pdf"):
-                text = extract_text_from_pdf(f)
-
-            # TXT or others
+            if file.filename.lower().endswith(".pdf"):
+                text = extract_text_from_pdf(file)
             else:
-                text = f.read().decode("utf-8", errors="ignore")
+                text = file.read().decode("utf-8", errors="ignore")
 
-        # ⭐ CASE 2 — Raw text
+        # ---------------------------
+        # 2️⃣ RAW TEXT CASE
+        # ---------------------------
         else:
             body = request.get_json(force=True, silent=True) or {}
             text = body.get("text", "")
 
         if not text.strip():
-            return jsonify({"error": "No text extracted from file."}), 400
+            return jsonify({"error": "No text extracted from resume."}), 400
 
-        # ⭐ Extract skills
+        # ---------------------------
+        # 3️⃣ SKILL EXTRACTION
+        # ---------------------------
         skills = parse_resume(text)
+        print("Extracted Skills:", skills)
 
-        # ⭐ Match jobs
-        matches = fetch_and_match_jobs(skills)
+        # ---------------------------
+        # 4️⃣ PROFESSION DETECTION
+        # ---------------------------
+        profession = detect_profession(text)
+        print("Detected Profession:", profession)
 
-        # ⭐ Save to DB
-        for m in matches:
-            save_match(m)
+        # ---------------------------
+        # 5️⃣ JOB MATCHING (skills + profession)
+        # ---------------------------
+        final_matches = fetch_and_match_jobs(skills, resume_text=text)
+        print("Matched Jobs:", len(final_matches))
 
-        return jsonify({"skills": skills, "matches": matches}), 200
+        # ---------------------------
+        # 6️⃣ SAVE TO DB
+        # ---------------------------
+        for m in final_matches:
+            try:
+                save_match(m)
+            except Exception as db_err:
+                print("DB save error:", db_err)
+
+        # ---------------------------
+        # 7️⃣ SEND RESPONSE
+        # ---------------------------
+        return jsonify({
+            "profession": profession,
+            "skills": skills,
+            "matches": final_matches
+        }), 200
 
     except Exception as e:
-        print("UPLOAD ERROR:", e)
+        print("\n🔥 UPLOAD ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/api/fetch-jobs', methods=['POST', 'GET'])
+# ===============================================================
+# ⭐ MANUAL JOB FETCH ENDPOINT
+# ===============================================================
+@app.route("/api/fetch-jobs", methods=["POST", "GET"])
 def fetch_jobs_endpoint():
-    """
-    POST: { "skills": [...] }
-    GET: Uses empty skill list
-    """
     data = request.get_json(force=True, silent=True) or {}
-    skills = data.get("skills") or []
+    skills = data.get("skills", [])
 
-    matches = fetch_and_match_jobs(skills)
-
+    matches = fetch_and_match_jobs(skills, resume_text="")
     for m in matches:
         save_match(m)
 
     return jsonify({"matches": matches}), 200
 
 
-# ⭐ Scheduler (runs every 6 hours)
+# ===============================================================
+# ⭐ SCHEDULER (every 6 hours or custom)
+# ===============================================================
 scheduler = BackgroundScheduler()
 interval_minutes = int(os.environ.get("SCHEDULE_INTERVAL_MINUTES", 360))
 
 
 @scheduler.scheduled_job("interval", minutes=interval_minutes)
 def scheduled_fetch():
-    print("Scheduler: fetching jobs for demo users...")
-    fetch_and_match_jobs([])
+    print("Scheduler running...")
+    fetch_and_match_jobs([], resume_text="")
 
 
 scheduler.start()
 
 
+# ===============================================================
+# ⭐ RUN SERVER
+# ===============================================================
 if __name__ == "__main__":
     debug = os.environ.get("FLASK_DEBUG", "1") == "1"
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=debug)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=debug
+    )

@@ -1,78 +1,71 @@
 # backend/resume.py
-
 import os
 import json
-import PyPDF2
-import openai
 
-# ⭐ Load OpenAI API key
+# PDF reading library
+try:
+    from pypdf import PdfReader
+except Exception:
+    PdfReader = None
+
+# Optional OpenAI usage
+try:
+    import openai
+except Exception:
+    openai = None
+
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY")
-if OPENAI_KEY:
+if OPENAI_KEY and openai:
     openai.api_key = OPENAI_KEY
 
-# ⭐ Prompt for extracting skills
 PROMPT = (
-    "Extract a JSON array (list) of the most relevant technical skills and tools "
-    "mentioned in this resume text. Only return a JSON array of lowercase strings. "
-    "Resume:\n\n"
+    "Extract a JSON array of the most relevant technical skills and tools "
+    "mentioned in this resume text. Only return a JSON array of lowercase strings.\n\nResume:\n\n"
 )
 
-# ⭐ Small fallback list (if no OpenAI key used)
 FALLBACK_SKILLS = [
-    "python", "java", "c++", "javascript", "react", "node", "flask", "django",
-    "sql", "mongodb", "aws", "docker", "kubernetes", "html", "css",
-    "tensorflow", "pytorch"
+    "python","java","c++","javascript","react","node","flask","django","sql",
+    "mongodb","aws","docker","kubernetes","html","css","tensorflow","pytorch",
+    "mysql","postgresql","c#","php","ruby"
 ]
 
-# ⭐ EXTRACT TEXT FROM PDF
-def extract_text_from_pdf(file_stream):
+
+def extract_text_from_pdf(file_storage):
+    if PdfReader is None:
+        raise RuntimeError("pypdf library not installed. Run: pip install pypdf")
     try:
-        reader = PyPDF2.PdfReader(file_stream)
-        text = ""
-
-        for page in reader.pages:
-            text += page.extract_text() or ""
-
-        return text.strip()
+        reader = PdfReader(file_storage.stream)
+        pages = []
+        for p in reader.pages:
+            try:
+                pages.append(p.extract_text() or "")
+            except:
+                pages.append("")
+        return "\n".join(pages).strip()
     except Exception as e:
-        print("PDF extract error:", e)
-        return ""
+        raise RuntimeError("PDF parse error: " + str(e))
 
 
-# ⭐ PARSE RESUME INTO SKILLS
 def parse_resume(text: str):
     text = (text or "").strip()
     if not text:
         return []
 
-    # ⭐ If OpenAI key available → AI skill detection
-    if OPENAI_KEY:
+    # Try OpenAI if available
+    if OPENAI_KEY and openai:
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",
+            resp = openai.ChatCompletion.create(
+                model="gpt-4o",
                 messages=[{"role": "user", "content": PROMPT + text}],
                 max_tokens=200,
                 temperature=0
             )
-
-            content = response["choices"][0]["message"]["content"].strip()
-
-            # parse JSON
+            content = resp["choices"][0]["message"]["content"].strip()
             skills = json.loads(content)
+            return [s.lower().strip() for s in skills if isinstance(s, str)]
+        except:
+            pass
 
-            # normalize list
-            skills = [
-                s.lower().strip()
-                for s in skills
-                if isinstance(s, str)
-            ]
-
-            return list(dict.fromkeys(skills))  # remove duplicates
-        except Exception as e:
-            print("OpenAI parse error:", e)
-
-    # ⭐ Fallback (no OpenAI key)
+    # Fallback keyword match
     lowered = text.lower()
-    found = [s for s in FALLBACK_SKILLS if s in lowered]
-
-    return list(dict.fromkeys(found))
+    return [s for s in FALLBACK_SKILLS if s in lowered]
