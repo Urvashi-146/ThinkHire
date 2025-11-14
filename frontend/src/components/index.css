@@ -1,0 +1,137 @@
+/* ===== page & background ===== */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; font-family: "Poppins", sans-serif; }
+body { background: radial-gradient(circle at top left, #0b1620, #02060a); color: #e6f7ff; }
+
+/* subtle starfield (small dots) */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 40px 20px;
+}
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#0ff 1px, transparent 1px);
+  background-size: 10px 10px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+/* ===== upload container ===== */
+.upload-container{
+  width: 520px;
+  max-width: calc(100% - 40px);
+  background: linear-gradient(180deg, rgba(10,18,26,0.6), rgba(6,10,14,0.7));
+  border-radius: 16px;
+  padding: 28px;
+  border: 2px solid rgba(0,230,255,0.95);
+  box-shadow: 0 10px 60px rgba(0,230,255,0.08), 0 0 30px rgba(0,200,255,0.12);
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* neon title */
+.neon-title{
+  font-size: 24px;
+  color: #00eaff;
+  margin: 0 0 18px 0;
+  text-shadow: 0 0 12px rgba(0,230,255,0.6), 0 0 28px rgba(120, 60, 255, 0.12);
+  letter-spacing: 0.6px;
+  font-weight: 700;
+}
+
+/* upload box */
+.upload-box{
+  border-radius: 12px;
+  border: 2px dashed rgba(0,230,255,0.7);
+  padding: 36px 24px;
+  margin: 6px auto 18px auto;
+  max-width: 440px;
+  transition: all .18s ease;
+  background: rgba(0,0,0,0.18);
+  box-shadow: inset 0 2px 18px rgba(0,0,0,0.4);
+}
+.upload-box.drag-active{
+  background: rgba(0,230,255,0.03);
+  box-shadow: 0 6px 30px rgba(0,230,255,0.08);
+}
+
+/* cloud icon + text */
+.cloud-icon { font-size: 46px; color: #00ffd1; filter: drop-shadow(0 0 10px rgba(0,230,255,0.3)); }
+.upload-text { margin-top: 8px; color: #bfefff; font-weight: 600; }
+
+/* selected file name */
+.file-name { margin-top: 10px; color: #80ffff; font-weight: 600; }
+
+/* neon button */
+.neon-btn{
+  display: inline-block;
+  margin-top: 14px;
+  padding: 12px 36px;
+  border-radius: 28px;
+  background: linear-gradient(90deg,#00d4ff,#7a4bff);
+  color: #010101;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(122,75,255,0.18), 0 6px 18px rgba(0,212,255,0.12);
+}
+.neon-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* error */
+.error { color: #ff7b7b; margin-top: 10px; font-weight: 600; }
+
+/* results */
+.results-section { margin-top: 22px; text-align: left; }
+.section-title { color: #ffffff; margin: 12px 0 8px 0; font-size: 18px; }
+.skills-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+/* pill */
+.skill-pill {
+  background: rgba(0,230,255,0.08);
+  color: #bffaff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(0,230,255,0.18);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* job card */
+.jobs-list { margin-top: 8px; }
+.job-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border-left: 3px solid rgba(0,230,255,0.9);
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+.job-card h3 { margin: 0 0 4px 0; font-size: 16px; color: #e9ffff; }
+.job-card .company { color: #bfefff; margin: 0 0 6px 0; font-size: 14px; }
+.job-card .matched { font-size: 13px; color: #cdeff1; margin: 4px 0; }
+
+/* apply button */
+.apply-btn {
+  display:inline-block;
+  margin-top: 8px;
+  padding: 7px 12px;
+  background: #00eaff;
+  color: #0a0a0a;
+  text-decoration:none;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* responsive */
+@media (max-width: 600px) {
+  .upload-container { width: calc(100% - 32px); padding: 20px; }
+  .upload-box { padding: 28px 12px; }
+}
